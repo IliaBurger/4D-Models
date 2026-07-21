@@ -3,33 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>4D Models // Admin Panel</title>
+  <title>Панель управления — 4D Models</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background: #05070c; color: #fff; font-family: sans-serif; padding: 20px; max-width: 900px; margin: 0 auto;">
 
-  <header>
-    <div class="logo">4D MODELS // ADMIN</div>
-    <nav>
-      <a href="index.html" style="color: var(--text-secondary); text-decoration: none;">Home</a>
-    </nav>
+  <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color, #1f2937); padding-bottom: 15px;">
+    <h1 style="font-size: 22px; margin: 0;">🛠 Панель администратора</h1>
+    <a href="/" style="color: #38bdf8; text-decoration: none; font-size: 14px;">← Вернуться на сайт</a>
   </header>
 
-  <div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+  <!-- Форма загрузки новой модели -->
+  <section style="background: #0b0f19; border: 1px solid var(--border-color, #1f2937); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <h2 style="font-size: 18px; margin-bottom: 20px; color: #fff;">Загрузить новую 3D-модель</h2>
     
-    <!-- Форма добавления модели -->
-    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; margin-bottom: 40px;">
-      <h2 style="color: #fff; font-size: 20px; margin-bottom: 20px;">Add New 3D Model</h2>
-      
-      <form id="uploadForm" style="display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <label style="display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">Model Title</label>
-          <input type="text" id="titleInput" required style="width: 100%; padding: 12px; background: #05070c; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; box-sizing: border-box;">
-        </div>
+    <form id="uploadForm" style="display: flex; flex-direction: column; gap: 15px;">
+      <div>
+        <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 5px;">Название модели</label>
+        <input type="text" id="modelTitle" required placeholder="Например: Futuristic Chair" style="width: 100%; padding: 12px; background: #05070c; border: 1px solid #1f2937; color: #fff; border-radius: 8px; box-sizing: border-box;">
+      </div>
 
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
         <div>
-          <label style="display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">Category</label>
-          <select id="categoryInput" style="width: 100%; padding: 12px; background: #05070c; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; box-sizing: border-box;">
+          <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 5px;">Категория</label>
+          <select id="modelCategory" style="width: 100%; padding: 12px; background: #05070c; border: 1px solid #1f2937; color: #fff; border-radius: 8px; box-sizing: border-box;">
             <option value="Furniture">Furniture</option>
             <option value="Nature & Plants">Nature & Plants</option>
             <option value="Architecture & Interior">Architecture & Interior</option>
@@ -42,71 +40,72 @@
             <option value="Abstract & Decor">Abstract & Decor</option>
           </select>
         </div>
-
         <div>
-          <label style="display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">Author</label>
-          <input type="text" id="authorInput" required style="width: 100%; padding: 12px; background: #05070c; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; box-sizing: border-box;">
+          <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 5px;">Автор</label>
+          <input type="text" id="modelAuthor" value="4D Models" placeholder="Имя автора" style="width: 100%; padding: 12px; background: #05070c; border: 1px solid #1f2937; color: #fff; border-radius: 8px; box-sizing: border-box;">
         </div>
-
-        <div>
-          <label style="display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">3D Model File (.gltf, .glb)</label>
-          <input type="file" id="fileInput" accept=".glb,.gltf" required style="color: var(--text-secondary);">
-        </div>
-
-        <button type="submit" style="padding: 14px; background: var(--accent-gradient); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;">Publish Model</button>
-      </form>
-    </div>
-
-    <!-- Управление загруженными моделями -->
-    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px;">
-      <h2 style="color: #fff; font-size: 20px; margin-bottom: 20px;">Manage Uploaded Models</h2>
-      <div id="adminModelsList" style="display: flex; flex-direction: column; gap: 12px;">
-        <p style="color: var(--text-secondary);">Загрузка списка...</p>
       </div>
-    </div>
 
-  </div>
+      <div>
+        <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 5px;">Файл модели (.glb / .gltf)</label>
+        <input type="file" id="modelFile" accept=".glb,.gltf" required style="width: 100%; padding: 10px; background: #05070c; border: 1px solid #1f2937; color: #9ca3af; border-radius: 8px; box-sizing: border-box;">
+      </div>
+
+      <button type="submit" id="submitBtn" style="padding: 14px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 10px;">Загрузить модель в каталог</button>
+    </form>
+  </section>
+
+  <!-- Список существующих моделей -->
+  <section>
+    <h2 style="font-size: 18px; margin-bottom: 15px;">Управление загруженными моделями</h2>
+    <div id="adminModelsList" style="display: flex; flex-direction: column; gap: 10px;">
+      <p style="color: #9ca3af;">Загрузка списка...</p>
+    </div>
+  </section>
 
   <script>
-    const form = document.getElementById('uploadForm');
-    const adminList = document.getElementById('adminModelsList');
-
     async function loadAdminModels() {
+      const listContainer = document.getElementById('adminModelsList');
       try {
         const res = await fetch('/api/assets');
         const models = await res.json();
         
-        adminList.innerHTML = '';
         if (models.length === 0) {
-          adminList.innerHTML = '<p style="color: var(--text-secondary);">Нет добавленных моделей</p>';
+          listContainer.innerHTML = '<p style="color: #9ca3af; font-size: 14px;">В каталоге пока нет ни одной модели.</p>';
           return;
         }
 
-        models.forEach(m => {
+        listContainer.innerHTML = '';
+        models.forEach(model => {
           const item = document.createElement('div');
-          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #05070c; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);';
+          item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #0b0f19; border: 1px solid #1f2937; padding: 15px; border-radius: 8px;';
+          
           item.innerHTML = `
             <div>
-              <strong style="color: #fff; display: block; margin-bottom: 2px;">${m.title}</strong>
-              <span style="font-size: 12px; color: var(--text-secondary);">${m.category} • ${m.author}</span>
+              <h4 style="margin: 0 0 5px 0; font-size: 15px; color: #fff;">${model.title}</h4>
+              <p style="margin: 0; font-size: 12px; color: #9ca3af;">Категория: ${model.category} | Автор: ${model.author}</p>
             </div>
-            <button onclick="deleteModel('${m.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;">Удалить</button>
+            <button onclick="deleteModel('${model.id}')" style="background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Удалить</button>
           `;
-          adminList.appendChild(item);
+          listContainer.appendChild(item);
         });
       } catch (err) {
-        console.error(err);
+        console.error('Ошибка загрузки моделей:', err);
+        listContainer.innerHTML = '<p style="color: #ef4444; font-size: 14px;">Не удалось загрузить список моделей.</p>';
       }
     }
 
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Загрузка...';
+
       const formData = new FormData();
-      formData.append('title', document.getElementById('titleInput').value);
-      formData.append('category', document.getElementById('categoryInput').value);
-      formData.append('author', document.getElementById('authorInput').value);
-      formData.append('file', document.getElementById('fileInput').files[0]);
+      formData.append('title', document.getElementById('modelTitle').value);
+      formData.append('category', document.getElementById('modelCategory').value);
+      formData.append('author', document.getElementById('modelAuthor').value);
+      formData.append('file', document.getElementById('modelFile').files[0]);
 
       try {
         const res = await fetch('/api/assets', {
@@ -115,29 +114,42 @@
         });
 
         if (res.ok) {
-          form.reset();
+          document.getElementById('uploadForm').reset();
           loadAdminModels();
-          alert('Модель успешно опубликована!');
+          alert('Модель успешно загружена!');
+        } else if (res.status === 401) {
+          alert('Ошибка авторизации. Обновите страницу и введите правильный логин и пароль.');
+          location.reload();
         } else {
-          alert('Ошибка при публикации');
+          alert('Ошибка при загрузке модели на сервер.');
         }
       } catch (err) {
-        console.error(err);
-        alert('Ошибка соединения с сервером');
+        console.error('Ошибка сети:', err);
+        alert('Произошла ошибка соединения с сервером.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Загрузить модель в каталог';
       }
     });
 
     async function deleteModel(id) {
-      if (!confirm('Удалить эту модель?')) return;
+      if (!confirm('Вы действительно хотите удалить эту модель?')) return;
+
       try {
-        const res = await fetch(`/api/assets/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/assets/${id}`, {
+          method: 'DELETE'
+        });
+
         if (res.ok) {
           loadAdminModels();
+        } else if (res.status === 401) {
+          alert('Ошибка авторизации. Перезагрузите страницу.');
+          location.reload();
         } else {
-          alert('Не удалось удалить модель');
+          alert('Не удалось удалить модель.');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Ошибка удаления:', err);
       }
     }
 
