@@ -8,12 +8,38 @@ const PORT = process.env.PORT || 3000;
 
 // Настройка логина и пароля администратора
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "12345"; // Вы можете изменить пароль здесь
+const ADMIN_PASS = "12345";
 
-// Создаем папку для загрузок в корне, если она еще не создана
+// Создаем папку для загрузок, если её нет
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Путь к файлу базы данных (JSON)
+const dbFile = path.join(__dirname, 'models.json');
+
+// Функция чтения моделей из файла
+function getAssets() {
+  if (!fs.existsSync(dbFile)) {
+    return [];
+  }
+  try {
+    const data = fs.readFileSync(dbFile, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Ошибка чтения базы данных:', err);
+    return [];
+  }
+}
+
+// Функция сохранения моделей в файл
+function saveAssets(assets) {
+  try {
+    fs.writeFileSync(dbFile, JSON.stringify(assets, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Ошибка записи базы данных:', err);
+  }
 }
 
 // Настройка хранилища для файлов моделей (.glb / .gltf) через multer
@@ -33,11 +59,11 @@ const upload = multer({ storage: storage });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Раздача статических файлов из корня проекта
+// Раздача статических файлов
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(uploadDir));
 
-// Функция проверки авторизации (Basic Auth) для панели управления
+// Функция проверки авторизации (Basic Auth)
 function checkAuth(req, res, next) {
   const authheader = req.headers.authorization;
   if (!authheader) {
@@ -57,25 +83,22 @@ function checkAuth(req, res, next) {
   }
 }
 
-// Явные маршруты для страниц
+// Маршруты
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Защищаем страницу админки паролем
 app.get('/admin.html', checkAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// Хранилище списка моделей в памяти
-let assets = [];
-
-// API: Получить список всех моделей (доступно всем)
+// API: Получить список всех моделей
 app.get('/api/assets', (req, res) => {
+  const assets = getAssets();
   res.json(assets);
 });
 
-// API: Загрузить новую модель (только для администратора)
+// API: Загрузить новую модель
 app.post('/api/assets', checkAuth, upload.single('file'), (req, res) => {
   try {
     const { title, category, author } = req.body;
@@ -94,7 +117,10 @@ app.post('/api/assets', checkAuth, upload.single('file'), (req, res) => {
       file_path: file_path
     };
 
+    const assets = getAssets();
     assets.push(newAsset);
+    saveAssets(assets);
+
     res.status(201).json(newAsset);
   } catch (err) {
     console.error('Ошибка при загрузке модели:', err);
@@ -102,9 +128,10 @@ app.post('/api/assets', checkAuth, upload.single('file'), (req, res) => {
   }
 });
 
-// API: Удалить модель по ID (только для администратора)
+// API: Удалить модель по ID
 app.delete('/api/assets/:id', checkAuth, (req, res) => {
   const modelId = req.params.id;
+  const assets = getAssets();
   const modelIndex = assets.findIndex(a => a.id === modelId);
 
   if (modelIndex === -1) {
@@ -123,8 +150,10 @@ app.delete('/api/assets/:id', checkAuth, (req, res) => {
     }
   }
 
-  // Удаляем из массива
+  // Удаляем из массива и сохраняем файл базы данных
   assets.splice(modelIndex, 1);
+  saveAssets(assets);
+
   res.json({ success: true });
 });
 
