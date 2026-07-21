@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title id="pageTitle">PXS // Просмотр модели</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <style>
+        .model-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        @media(max-width: 900px) { .model-container { grid-template-columns: 1fr; } }
+        .viewer-box {
+            height: 550px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; backdrop-filter: blur(12px);
+        }
+        .details-box {
+            background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; backdrop-filter: blur(12px); display: flex; flex-direction: column;
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-card {
+            background: #0f172a; border: 1px solid var(--border-color); padding: 35px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .telegram-btn {
+            background: #229ED9; color: white; text-decoration: none; display: block; padding: 12px; border-radius: 10px; font-weight: 600; margin: 20px 0 10px; transition: opacity 0.2s;
+        }
+        .telegram-btn:hover { opacity: 0.9; }
+        .lang-switcher {
+            background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; outline: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="pexels-header">
+        <div class="logo-wrapper">
+            <span class="logo-text">PXS.SPACE</span>
+        </div>
+        <nav class="header-nav" style="display: flex; gap: 20px; align-items: center;">
+            <a href="index.html" id="navBack">Назад в каталог</a>
+            <select id="langSelect" class="lang-switcher">
+                <option value="ru">RU 🇷🇺</option>
+                <option value="en">EN 🇬🇧</option>
+            </select>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="model-container">
+            <div class="viewer-box">
+                <model-viewer id="mainViewer" auto-rotate camera-controls style="width: 100%; height: 100%; background: transparent;"></model-viewer>
+            </div>
+            <div class="details-box">
+                <span class="badge" id="modelCategory" style="align-self: flex-start; margin-bottom: 15px;">Категория</span>
+                <h1 id="modelTitle" style="font-size: 24px; margin-bottom: 15px;">Загрузка...</h1>
+                <p id="modelDesc" style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 30px; flex-grow: 1;"></p>
+                
+                <button id="downloadTriggerBtn" style="background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    Скачать бесплатно (.glb)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно Telegram -->
+    <div class="modal-overlay" id="tgModal">
+        <div class="modal-card">
+            <h3 id="mTitle" style="margin-bottom: 10px;">Подпишитесь на Telegram</h3>
+            <p id="mDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Для скачивания поддержите наше сообщество. Если вы отпишетесь, скачивание будет заблокировано.</p>
+            
+            <!-- СЮДА ВСТАВЬ ССЫЛКУ НА СВОЙ ТГ КАНАЛ -->
+            <a href="https://t.me/Public4D_models" target="_blank" class="telegram-btn" id="mLink" onclick="simulateSubscribe()">1. Перейти в Telegram / Подписаться</a>
+            
+            <div style="margin: 15px 0; font-size: 12px; color: var(--text-muted);">
+                <label><input type="checkbox" id="subCheck" onchange="toggleSubscription(this)"> <span id="mSubText">Симулировать статус: я подписан</span></label>
+            </div>
+
+            <button id="verifyDownloadBtn" style="background: var(--accent-color); border: none; color: white; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 600;">Проверить и скачать</button>
+            <br><br>
+            <span id="closeModal" style="color: var(--text-muted); font-size: 13px; cursor: pointer;">Отмена</span>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const modelId = urlParams.get('id');
+
+        let currentLang = localStorage.getItem('pxs_lang') || 'ru';
+        document.getElementById('langSelect').value = currentLang;
+
+        const translations = {
+            ru: {
+                back: "Назад в каталог",
+                downloadBtn: "Скачать бесплатно (.glb)",
+                modalTitle: "Подпишитесь на Telegram",
+                modalDesc: "Для скачивания поддержите наше сообщество. Проверка подписки обязательна.",
+                subBtn: "1. Перейти в Telegram / Подписаться",
+                subToggleText: "Симулировать статус: я подписан в Telegram",
+                verifyBtn: "Проверить и скачать",
+                cancel: "Отмена",
+                notSubbedAlert: "Ошибка: Вы не подписаны на Telegram-канал! Подпишитесь, чтобы скачать модель.",
+                loading: "Загрузка...",
+                noDesc: "Описание отсутствует.",
+                notFoundTitle: "Модель не найдена"
+            },
+            en: {
+                back: "Back to catalog",
+                downloadBtn: "Download Free (.glb)",
+                modalTitle: "Subscribe to Telegram",
+                modalDesc: "Support our community to download. Subscription verification is required.",
+                subBtn: "1. Open Telegram / Subscribe",
+                subToggleText: "Simulate status: I am subscribed",
+                verifyBtn: "Verify and Download",
+                cancel: "Cancel",
+                notSubbedAlert: "Error: You are not subscribed to the Telegram channel! Subscribe to download.",
+                loading: "Loading...",
+                noDesc: "No description available.",
+                notFoundTitle: "Model not found"
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('pxs_lang', lang);
+            const t = translations[lang];
+
+            document.getElementById('navBack').innerText = t.back;
+            document.getElementById('downloadTriggerBtn').innerText = t.downloadBtn;
+            document.getElementById('mTitle').innerText = t.modalTitle;
+            document.getElementById('mDesc').innerText = t.modalDesc;
+            document.getElementById('mLink').innerText = t.subBtn;
+            document.getElementById('mSubText').innerText = t.subToggleText;
+            document.getElementById('verifyDownloadBtn').innerText = t.verifyBtn;
+            document.getElementById('closeModal').innerText = t.cancel;
+            
+            if (modelTitle.innerText === translations[lang === 'ru' ? 'en' : 'ru'].loading) {
+                modelTitle.innerText = t.loading;
+            }
+            if (modelDesc.innerText === translations[lang === 'ru' ? 'en' : 'ru'].noDesc) {
+                modelDesc.innerText = t.noDesc;
+            }
+        }
+
+        document.getElementById('langSelect').addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+        });
+
+        let userToken = localStorage.getItem('pxs_user_token');
+        if (!userToken) {
+            userToken = 'user_' + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem('pxs_user_token', userToken);
+        }
+
+        let isSubscribed = false;
+        const mainViewer = document.getElementById('mainViewer');
+        const modelTitle = document.getElementById('modelTitle');
+        const modelDesc = document.getElementById('modelDesc');
+        const modelCategory = document.getElementById('modelCategory');
+        const pageTitle = document.getElementById('pageTitle');
+        
+        const downloadTriggerBtn = document.getElementById('downloadTriggerBtn');
+        const tgModal = document.getElementById('tgModal');
+        const verifyDownloadBtn = document.getElementById('verifyDownloadBtn');
+        const closeModal = document.getElementById('closeModal');
+        const subCheck = document.getElementById('subCheck');
+
+        async function checkServerSubscription() {
+            try {
+                const res = await fetch(`/api/subscription/${userToken}`);
+                const data = await res.json();
+                isSubscribed = data.is_subscribed;
+                subCheck.checked = isSubscribed;
+            } catch (err) {
+                console.error('Ошибка проверки подписки:', err);
+            }
+        }
+
+        async function updateServerSubscription(status) {
+            isSubscribed = status;
+            await fetch('/api/subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: userToken, is_subscribed: status })
+            });
+        }
+
+        function toggleSubscription(checkbox) {
+            updateServerSubscription(checkbox.checked);
+        }
+
+        function simulateSubscribe() {
+            subCheck.checked = true;
+            updateServerSubscription(true);
+        }
+
+        let fileToDownload = '';
+
+        async function loadModelData() {
+            try {
+                const res = await fetch(`/api/models`);
+                const data = await res.json();
+                const model = data.models.find(m => m.id == modelId);
+                const t = translations[currentLang];
+
+                if (model) {
+                    pageTitle.innerText = `PXS // ${model.title}`;
+                    modelTitle.innerText = model.title;
+                    modelDesc.innerText = model.description || t.noDesc;
+                    modelCategory.innerText = model.category;
+                    mainViewer.setAttribute('src', model.file_url);
+                    if (model.preview_url) mainViewer.setAttribute('poster', model.preview_url);
+                    fileToDownload = model.file_url;
+                } else {
+                    modelTitle.innerText = t.notFoundTitle;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        downloadTriggerBtn.addEventListener('click', () => {
+            checkServerSubscription();
+            tgModal.style.display = 'flex';
+        });
+
+        closeModal.addEventListener('click', () => {
+            tgModal.style.display = 'none';
+        });
+
+        verifyDownloadBtn.addEventListener('click', async () => {
+            await checkServerSubscription();
+
+            if (!isSubscribed) {
+                alert(translations[currentLang].notSubbedAlert);
+                return;
+            }
+
+            tgModal.style.display = 'none';
+            if (fileToDownload) {
+                const a = document.createElement('a');
+                a.href = fileToDownload;
+                a.download = '';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        });
+
+        setLanguage(currentLang);
+        checkServerSubscription();
+        loadModelData();
+    </script>
+</body>
+</html>

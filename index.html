@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Метатег подтверждения Яндекс Вебмастера -->
+  <meta name="yandex-verification" content="42fe8de2d5746e0b">
+
+  <title id="pageTitle">4D Models // 3D Stock Platform</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Подключение Three.js, GLTFLoader и OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <!-- Шапка сайта -->
+  <header>
+    <div class="logo">4D Models</div>
+    <nav style="display: flex; align-items: center; gap: 20px;">
+      <a href="admin.html" id="navAdmin">Панель управления</a>
+      <select id="langSwitcher" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+        <option value="ru">RU</option>
+        <option value="en">EN</option>
+      </select>
+    </nav>
+  </header>
+
+  <!-- Центральная секция с заголовком и поиском -->
+  <section class="hero-section">
+    <h1 id="heroTitle">Бесплатная коллекция 3D-моделей</h1>
+    <p id="heroSubtitle">Загружайте открытые 3D-ресурсы для своих проектов</p>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Поиск моделей...">
+    </div>
+  </section>
+
+  <!-- Горизонтальная лента категорий -->
+  <div class="categories-container" id="categoryContainer"></div>
+
+  <!-- Сетка моделей -->
+  <main class="models-grid" id="modelsGrid"></main>
+
+  <!-- Модальное окно 3D-просмотра -->
+  <div id="modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 750px; padding: 30px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+      <span id="closeModal" style="position: absolute; top: 20px; right: 20px; font-size: 28px; color: #fff; cursor: pointer; z-index: 10;">&times;</span>
+      
+      <h2 id="modalTitle" style="color: #fff; font-size: 22px; margin-bottom: 6px;">Название модели</h2>
+      <p id="modalAuthor" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">Автор: -</p>
+      
+      <!-- Контейнер для 3D просмотра -->
+      <div id="viewer3d" style="width: 100%; height: 400px; background: #05070c; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; position: relative; margin-bottom: 20px;"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px;">
+        <p style="color: var(--text-secondary); font-size: 13px;">💡 ЛКМ — вращение, Колесико — масштаб</p>
+        <a id="downloadBtn" href="#" download style="padding: 12px 24px; background: var(--accent-gradient); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600;">Скачать 3D-модель</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      ru: {
+        pageTitle: "4D Models // 3D Stock Platform",
+        navAdmin: "Панель управления",
+        heroTitle: "Бесплатная коллекция 3D-моделей",
+        heroSubtitle: "Загружайте открытые 3D-ресурсы для своих проектов",
+        searchPlaceholder: "Поиск моделей...",
+        allCategories: "Все",
+        authorPrefix: "Автор: ",
+        downloadBtn: "Скачать 3D-модель",
+        noModels: "Модели не найдены"
+      },
+      en: {
+        pageTitle: "4D Models // 3D Stock Platform",
+        navAdmin: "Admin Panel",
+        heroTitle: "Free 3D Models Collection",
+        heroSubtitle: "Download open 3D assets for your projects",
+        searchPlaceholder: "Search models...",
+        allCategories: "All",
+        authorPrefix: "Author: ",
+        downloadBtn: "Download 3D Model",
+        noModels: "No models found"
+      }
+    };
+
+    const categoriesList = [
+      "All", "Furniture", "Nature & Plants", "Architecture & Interior", 
+      "Characters & Creatures", "Vehicles & Tech", "Electronics & Gadgets", 
+      "Clothing & Fashion", "Food & Drinks", "Tools & Equipment", "Abstract & Decor"
+    ];
+
+    let currentLang = localStorage.getItem('4d_models_lang') || 'ru';
+    let allModels = [];
+    let selectedCategory = "All";
+
+    const langSwitcher = document.getElementById('langSwitcher');
+    langSwitcher.value = currentLang;
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('4d_models_lang', lang);
+      const t = translations[lang];
+
+      document.getElementById('pageTitle').innerText = t.pageTitle;
+      document.getElementById('navAdmin').innerText = t.navAdmin;
+      document.getElementById('heroTitle').innerText = t.heroTitle;
+      document.getElementById('heroSubtitle').innerText = t.heroSubtitle;
+      document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+      document.getElementById('downloadBtn').innerText = t.downloadBtn;
+
+      renderCategories();
+      renderModels();
+    }
+
+    langSwitcher.addEventListener('change', (e) => setLanguage(e.target.value));
+
+    function renderCategories() {
+      const container = document.getElementById('categoryContainer');
+      container.innerHTML = '';
+
+      categoriesList.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${selectedCategory === cat ? 'active' : ''}`;
+        btn.innerText = cat === "All" ? translations[currentLang].allCategories : cat;
+        btn.addEventListener('click', () => {
+          selectedCategory = cat;
+          renderCategories();
+          renderModels();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    async function fetchModels() {
+      try {
+        const res = await fetch('/api/assets');
+        allModels = await res.json();
+        renderModels();
+      } catch (err) {
+        console.error("Ошибка при получении моделей:", err);
+      }
+    }
+
+    function renderModels() {
+      const grid = document.getElementById('modelsGrid');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      grid.innerHTML = '';
+
+      const filtered = allModels.filter(m => {
+        const matchesCategory = selectedCategory === "All" || m.category === selectedCategory;
+        const matchesSearch = m.title.toLowerCase().includes(searchQuery) || m.author.toLowerCase().includes(searchQuery);
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1/-1; text-align: center; padding: 40px;">${translations[currentLang].noModels}</p>`;
+        return;
+      }
+
+      filtered.forEach(model => {
+        const card = document.createElement('div');
+        card.className = 'model-card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+          <div style="height: 180px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 32px; opacity: 0.5;">📦</span>
+          </div>
+          <div style="padding: 16px;">
+            <h3 style="color: #fff; font-size: 16px; margin-bottom: 4px;">${model.title}</h3>
+            <p style="color: var(--text-secondary); font-size: 13px;">${translations[currentLang].authorPrefix}${model.author}</p>
+          </div>
+        `;
+
+        card.addEventListener('click', () => openModal(model));
+        grid.appendChild(card);
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderModels);
+
+    let scene, camera, renderer, controls, currentModelMesh;
+
+    function init3DViewer() {
+      const container = document.getElementById('viewer3d');
+      container.innerHTML = '';
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x05070c);
+
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.set(0, 1.5, 4);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Студийное освещение
+      scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+      
+      const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
+      mainLight.position.set(5, 8, 5);
+      scene.add(mainLight);
+
+      const fillLight = new THREE.DirectionalLight(0xdbeafe, 1.0);
+      fillLight.position.set(-5, -2, -3);
+      scene.add(fillLight);
+
+      const backLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+      backLight.position.set(0, 4, -5);
+      scene.add(backLight);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    function load3DModel(url) {
+      if (!url) return;
+      const loader = new THREE.GLTFLoader();
+      loader.load(url, (gltf) => {
+        if (currentModelMesh) scene.remove(currentModelMesh);
+        currentModelMesh = gltf.scene;
+
+        const box = new THREE.Box3().setFromObject(currentModelMesh);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 2.2 / maxDim;
+        currentModelMesh.scale.set(scale, scale, scale);
+
+        currentModelMesh.position.x = -center.x * scale;
+        currentModelMesh.position.y = -center.y * scale;
+        currentModelMesh.position.z = -center.z * scale;
+
+        scene.add(currentModelMesh);
+      }, undefined, (err) => {
+        console.error('Ошибка загрузки модели:', err);
+      });
+    }
+
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+
+    function openModal(model) {
+      document.getElementById('modalTitle').innerText = model.title;
+      document.getElementById('modalAuthor').innerText = `${translations[currentLang].authorPrefix}${model.author}`;
+      
+      const downloadBtn = document.getElementById('downloadBtn');
+      downloadBtn.href = model.file_path;
+      downloadBtn.setAttribute('download', `${model.title}.glb`);
+
+      modal.style.display = 'flex';
+
+      setTimeout(() => {
+        init3DViewer();
+        load3DModel(model.file_path);
+      }, 50);
+    }
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+      if (renderer) renderer.dispose();
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        if (renderer) renderer.dispose();
+      }
+    });
+
+    setLanguage(currentLang);
+    fetchModels();
+  </script>
+</body>
+</html>
