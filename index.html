@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Метатег подтверждения Яндекс Вебмастера -->
-  <meta name="yandex-verification" content="42fe8de2d5746e0b">
+  <meta name="yandex-verification" content="61d6a1d1fcc9d23d">
 
   <title id="pageTitle">4D Models // 3D Stock Platform</title>
   <link rel="stylesheet" href="style.css">
@@ -55,10 +55,26 @@
       <!-- Контейнер для 3D просмотра -->
       <div id="viewer3d" style="width: 100%; height: 400px; background: #05070c; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; position: relative; margin-bottom: 20px;"></div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <p style="color: var(--text-secondary); font-size: 13px;">💡 ЛКМ — вращение, Колесико — масштаб</p>
-        <a id="downloadBtn" href="#" download style="padding: 12px 24px; background: var(--accent-gradient); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600;">Скачать 3D-модель</a>
+        <button id="openSubModalBtn" style="padding: 12px 24px; background: var(--accent-gradient); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Скачать 3D-модель</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно проверки подписки на Telegram -->
+  <div id="subModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.9); backdrop-filter: blur(10px); z-index: 1100; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 450px; padding: 30px; text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+      <span id="closeSubModal" style="position: absolute; top: 15px; right: 20px; font-size: 24px; color: #fff; cursor: pointer;">&times;</span>
+      
+      <div style="font-size: 40px; margin-bottom: 15px;">📢</div>
+      <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Подпишитесь на Telegram-канал</h3>
+      <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Чтобы скачать модель бесплатно, подпишитесь на наш канал.</p>
+      
+      <!-- Ссылка ведет строго на ваш канал (замените имя канала на свое) -->
+      <a id="tgLinkBtn" href="https://t.me/Public4D_models" target="_blank" style="display: block; width: 100%; padding: 12px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Подписаться на канал</a>
+      
+      <button id="confirmDownloadBtn" style="display: block; width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">2. Я подписался — Скачать</button>
     </div>
   </div>
 
@@ -73,7 +89,11 @@
         allCategories: "Все",
         authorPrefix: "Автор: ",
         downloadBtn: "Скачать 3D-модель",
-        noModels: "Модели не найдены"
+        noModels: "Модели не найдены",
+        subTitle: "Подпишитесь на Telegram-канал",
+        subText: "Чтобы скачать модель бесплатно, подпишитесь на наш канал.",
+        tgBtn: "1. Подписаться на канал",
+        confirmBtn: "2. Я подписался — Скачать"
       },
       en: {
         pageTitle: "4D Models // 3D Stock Platform",
@@ -84,7 +104,11 @@
         allCategories: "All",
         authorPrefix: "Author: ",
         downloadBtn: "Download 3D Model",
-        noModels: "No models found"
+        noModels: "No models found",
+        subTitle: "Subscribe to Telegram Channel",
+        subText: "To download the model for free, please subscribe to our channel.",
+        tgBtn: "1. Subscribe to Channel",
+        confirmBtn: "2. I subscribed — Download"
       }
     };
 
@@ -97,6 +121,7 @@
     let currentLang = localStorage.getItem('4d_models_lang') || 'ru';
     let allModels = [];
     let selectedCategory = "All";
+    let currentModelData = null;
 
     const langSwitcher = document.getElementById('langSwitcher');
     langSwitcher.value = currentLang;
@@ -111,7 +136,11 @@
       document.getElementById('heroTitle').innerText = t.heroTitle;
       document.getElementById('heroSubtitle').innerText = t.heroSubtitle;
       document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-      document.getElementById('downloadBtn').innerText = t.downloadBtn;
+      document.getElementById('openSubModalBtn').innerText = t.downloadBtn;
+      document.getElementById('subModalTitle').innerText = t.subTitle;
+      document.getElementById('subModalText').innerText = t.subText;
+      document.getElementById('tgLinkBtn').innerText = t.tgBtn;
+      document.getElementById('confirmDownloadBtn').innerText = t.confirmBtn;
 
       renderCategories();
       renderModels();
@@ -208,7 +237,6 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
 
-      // Студийное освещение
       scene.add(new THREE.AmbientLight(0xffffff, 1.2));
       
       const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
@@ -258,15 +286,16 @@
 
     const modal = document.getElementById('modal');
     const closeModal = document.getElementById('closeModal');
+    const subModal = document.getElementById('subModal');
+    const closeSubModal = document.getElementById('closeSubModal');
+    const openSubModalBtn = document.getElementById('openSubModalBtn');
+    const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
 
     function openModal(model) {
+      currentModelData = model;
       document.getElementById('modalTitle').innerText = model.title;
       document.getElementById('modalAuthor').innerText = `${translations[currentLang].authorPrefix}${model.author}`;
       
-      const downloadBtn = document.getElementById('downloadBtn');
-      downloadBtn.href = model.file_path;
-      downloadBtn.setAttribute('download', `${model.title}.glb`);
-
       modal.style.display = 'flex';
 
       setTimeout(() => {
@@ -280,10 +309,36 @@
       if (renderer) renderer.dispose();
     });
 
+    openSubModalBtn.addEventListener('click', () => {
+      subModal.style.display = 'flex';
+    });
+
+    closeSubModal.addEventListener('click', () => {
+      subModal.style.display = 'none';
+    });
+
+    confirmDownloadBtn.addEventListener('click', () => {
+      if (!currentModelData) return;
+
+      const a = document.createElement('a');
+      a.href = currentModelData.file_path;
+      a.download = `${currentModelData.title}.glb`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      subModal.style.display = 'none';
+      modal.style.display = 'none';
+      if (renderer) renderer.dispose();
+    });
+
     window.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.display = 'none';
         if (renderer) renderer.dispose();
+      }
+      if (e.target === subModal) {
+        subModal.style.display = 'none';
       }
     });
 
