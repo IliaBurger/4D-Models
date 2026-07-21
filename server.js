@@ -29,12 +29,11 @@ const upload = multer({ storage: storage });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Раздача статических файлов из корня проекта (CSS, загруженные модели и т.д.)
+// Раздача статических файлов из корня проекта
 app.use(express.static(__dirname));
-// Отдельно разрешаем доступ к папке uploads по URL /uploads/...
 app.use('/uploads', express.static(uploadDir));
 
-// Явные маршруты для страниц, чтобы исключить ошибку Cannot GET
+// Явные маршруты для страниц
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -43,7 +42,7 @@ app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// Временное хранилище списка моделей в памяти
+// Хранилище списка моделей в памяти
 let assets = [];
 
 // API: Получить список всех моделей
