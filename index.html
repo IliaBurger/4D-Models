@@ -62,19 +62,20 @@
     </div>
   </div>
 
-  <!-- Модальное окно проверки подписки на Telegram -->
+  <!-- Строгое модальное окно с прямой ссылкой на канал -->
   <div id="subModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.9); backdrop-filter: blur(10px); z-index: 1100; align-items: center; justify-content: center; padding: 20px;">
     <div style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 450px; padding: 30px; text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
       <span id="closeSubModal" style="position: absolute; top: 15px; right: 20px; font-size: 24px; color: #fff; cursor: pointer;">&times;</span>
       
       <div style="font-size: 40px; margin-bottom: 15px;">📢</div>
-      <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Подпишитесь на Telegram-канал</h3>
-      <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Чтобы скачать модель бесплатно, подпишитесь на наш канал.</p>
+      <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Доступ к скачиванию</h3>
+      <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">Чтобы получить 3D-модель бесплатно, вы должны быть подписаны на наш Telegram-канал.</p>
       
-      <!-- Ссылка ведет строго на ваш канал (замените имя канала на свое) -->
-      <a id="tgLinkBtn" href="https://t.me/Public4D_models" target="_blank" style="display: block; width: 100%; padding: 12px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Подписаться на канал</a>
+      <!-- Прямая ссылка на ваш Telegram-канал (ЗАМЕНИТЕ your_real_channel на ваш адрес) -->
+      <a id="tgDirectLink" href="https://t.me/your_real_channel" target="_blank" style="display: block; width: 100%; padding: 14px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Перейти и подписаться на канал</a>
       
-      <button id="confirmDownloadBtn" style="display: block; width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">2. Я подписался — Скачать</button>
+      <!-- Кнопка скачивания изначально заблокирована -->
+      <button id="strictDownloadBtn" style="display: block; width: 100%; padding: 14px; background: #374151; color: #9ca3af; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px;" disabled>2. Сначала подпишитесь</button>
     </div>
   </div>
 
@@ -90,10 +91,11 @@
         authorPrefix: "Автор: ",
         downloadBtn: "Скачать 3D-модель",
         noModels: "Модели не найдены",
-        subTitle: "Подпишитесь на Telegram-канал",
-        subText: "Чтобы скачать модель бесплатно, подпишитесь на наш канал.",
-        tgBtn: "1. Подписаться на канал",
-        confirmBtn: "2. Я подписался — Скачать"
+        subTitle: "Доступ к скачиванию",
+        subText: "Чтобы получить 3D-модель бесплатно, вы должны быть подписаны на наш Telegram-канал.",
+        tgBtn: "1. Перейти и подписаться на канал",
+        lockedBtn: "2. Сначала подпишитесь",
+        unlockedBtn: "Я подписался — Скачать модель"
       },
       en: {
         pageTitle: "4D Models // 3D Stock Platform",
@@ -105,10 +107,11 @@
         authorPrefix: "Author: ",
         downloadBtn: "Download 3D Model",
         noModels: "No models found",
-        subTitle: "Subscribe to Telegram Channel",
-        subText: "To download the model for free, please subscribe to our channel.",
-        tgBtn: "1. Subscribe to Channel",
-        confirmBtn: "2. I subscribed — Download"
+        subTitle: "Download Access",
+        subText: "To download the 3D model for free, you must be subscribed to our Telegram channel.",
+        tgBtn: "1. Go and Subscribe to Channel",
+        lockedBtn: "2. Subscribe First",
+        unlockedBtn: "I subscribed — Download Model"
       }
     };
 
@@ -122,6 +125,7 @@
     let allModels = [];
     let selectedCategory = "All";
     let currentModelData = null;
+    let userClickedSub = false;
 
     const langSwitcher = document.getElementById('langSwitcher');
     langSwitcher.value = currentLang;
@@ -139,8 +143,13 @@
       document.getElementById('openSubModalBtn').innerText = t.downloadBtn;
       document.getElementById('subModalTitle').innerText = t.subTitle;
       document.getElementById('subModalText').innerText = t.subText;
-      document.getElementById('tgLinkBtn').innerText = t.tgBtn;
-      document.getElementById('confirmDownloadBtn').innerText = t.confirmBtn;
+      document.getElementById('tgDirectLink').innerText = t.tgBtn;
+      
+      if (!userClickedSub) {
+        document.getElementById('strictDownloadBtn').innerText = t.lockedBtn;
+      } else {
+        document.getElementById('strictDownloadBtn').innerText = t.unlockedBtn;
+      }
 
       renderCategories();
       renderModels();
@@ -289,7 +298,8 @@
     const subModal = document.getElementById('subModal');
     const closeSubModal = document.getElementById('closeSubModal');
     const openSubModalBtn = document.getElementById('openSubModalBtn');
-    const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
+    const tgDirectLink = document.getElementById('tgDirectLink');
+    const strictDownloadBtn = document.getElementById('strictDownloadBtn');
 
     function openModal(model) {
       currentModelData = model;
@@ -317,8 +327,19 @@
       subModal.style.display = 'none';
     });
 
-    confirmDownloadBtn.addEventListener('click', () => {
-      if (!currentModelData) return;
+    // Разблокировка кнопки при клике на ссылку канала
+    tgDirectLink.addEventListener('click', () => {
+      userClickedSub = true;
+      strictDownloadBtn.style.background = '#10b981';
+      strictDownloadBtn.style.color = '#fff';
+      strictDownloadBtn.style.cursor = 'pointer';
+      strictDownloadBtn.removeAttribute('disabled');
+      strictDownloadBtn.innerText = translations[currentLang].unlockedBtn;
+    });
+
+    // Клик по кнопке скачивания после подписки
+    strictDownloadBtn.addEventListener('click', () => {
+      if (!userClickedSub || !currentModelData) return;
 
       const a = document.createElement('a');
       a.href = currentModelData.file_path;
@@ -330,6 +351,14 @@
       subModal.style.display = 'none';
       modal.style.display = 'none';
       if (renderer) renderer.dispose();
+      
+      // Сброс состояния для будущих скачиваний
+      userClickedSub = false;
+      strictDownloadBtn.style.background = '#374151';
+      strictDownloadBtn.style.color = '#9ca3af';
+      strictDownloadBtn.style.cursor = 'not-allowed';
+      strictDownloadBtn.setAttribute('disabled', 'true');
+      strictDownloadBtn.innerText = translations[currentLang].lockedBtn;
     });
 
     window.addEventListener('click', (e) => {
