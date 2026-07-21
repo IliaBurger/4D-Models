@@ -4,10 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <!-- SEO: Заголовок и описание для поисковиков -->
+  <title id="pageTitle">4D Models — Бесплатные 3D-модели и сток ассетов</title>
+  <meta name="description" content="Скачивайте бесплатные 3D-модели в формате GLB/GLTF для дизайна, игр и веб-проектов. Большая коллекция открытых 3D-ресурсов с удобным просмотром.">
+
+  <!-- Ярлык (Фавикон) сайта -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
   <!-- Метатег подтверждения Яндекс Вебмастера -->
   <meta name="yandex-verification" content="61d6a1d1fcc9d23d">
 
-  <title id="pageTitle">4D Models // 3D Stock Platform</title>
   <link rel="stylesheet" href="style.css">
   
   <!-- Подключение Three.js, GLTFLoader и OrbitControls -->
@@ -71,10 +78,9 @@
       <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Доступ к скачиванию</h3>
       <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">Чтобы получить 3D-модель бесплатно, вы должны быть подписаны на наш Telegram-канал.</p>
       
-      <!-- Прямая ссылка на ваш Telegram-канал (ЗАМЕНИТЕ your_real_channel на ваш адрес) -->
+      <!-- Прямая ссылка на ваш Telegram-канал -->
       <a id="tgDirectLink" href="https://t.me/your_real_channel" target="_blank" style="display: block; width: 100%; padding: 14px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Перейти и подписаться на канал</a>
       
-      <!-- Кнопка скачивания изначально заблокирована -->
       <button id="strictDownloadBtn" style="display: block; width: 100%; padding: 14px; background: #374151; color: #9ca3af; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px;" disabled>2. Сначала подпишитесь</button>
     </div>
   </div>
@@ -82,7 +88,7 @@
   <script>
     const translations = {
       ru: {
-        pageTitle: "4D Models // 3D Stock Platform",
+        pageTitle: "4D Models — Бесплатные 3D-модели и сток ассетов",
         navAdmin: "Панель управления",
         heroTitle: "Бесплатная коллекция 3D-моделей",
         heroSubtitle: "Загружайте открытые 3D-ресурсы для своих проектов",
@@ -98,7 +104,7 @@
         unlockedBtn: "Я подписался — Скачать модель"
       },
       en: {
-        pageTitle: "4D Models // 3D Stock Platform",
+        pageTitle: "4D Models — Free 3D Models & Assets Stock",
         navAdmin: "Admin Panel",
         heroTitle: "Free 3D Models Collection",
         heroSubtitle: "Download open 3D assets for your projects",
@@ -223,7 +229,6 @@
       });
     }
 
-    // Функция автоматической генерации мини-скриншота 3D-модели
     function generateThumbnail(modelUrl, container) {
       const width = container.clientWidth || 280;
       const height = container.clientHeight || 180;
