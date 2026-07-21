@@ -6,8 +6,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Создаем папку для загрузок, если она еще не создана
-const uploadDir = path.join(__dirname, 'public', 'uploads');
+// Создаем папку для загрузок в корне, если она еще не создана
+const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -18,7 +18,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Уникальное имя файла на основе времени и оригинального названия
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
@@ -30,11 +29,21 @@ const upload = multer({ storage: storage });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Раздача статических файлов из папки public (где лежат index.html, admin.html и style.css)
-app.use(express.static(path.join(__dirname, 'public')));
+// Раздача статических файлов из корня проекта (CSS, загруженные модели и т.д.)
+app.use(express.static(__dirname));
+// Отдельно разрешаем доступ к папке uploads по URL /uploads/...
+app.use('/uploads', express.static(uploadDir));
 
-// Временное хранилище списка моделей в памяти 
-// (в будущем при желании можно заменить на базу данных вроде Supabase)
+// Явные маршруты для страниц, чтобы исключить ошибку Cannot GET
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Временное хранилище списка моделей в памяти
 let assets = [];
 
 // API: Получить список всех моделей
@@ -42,7 +51,7 @@ app.get('/api/assets', (req, res) => {
   res.json(assets);
 });
 
-// API: Загрузить новую модель (обрабатывает файл из формы в admin.html)
+// API: Загрузить новую модель (из admin.html)
 app.post('/api/assets', upload.single('file'), (req, res) => {
   try {
     const { title, category, author } = req.body;
@@ -81,7 +90,7 @@ app.delete('/api/assets/:id', (req, res) => {
   const model = assets[modelIndex];
   
   // Удаляем физический файл с диска
-  const absolutePath = path.join(__dirname, 'public', model.file_path);
+  const absolutePath = path.join(__dirname, model.file_path);
   if (fs.existsSync(absolutePath)) {
     try {
       fs.unlinkSync(absolutePath);
