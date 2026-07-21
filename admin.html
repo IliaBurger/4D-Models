@@ -97,15 +97,26 @@
 
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
       const submitBtn = document.getElementById('submitBtn');
+      const titleInput = document.getElementById('modelTitle').value;
+      const categoryInput = document.getElementById('modelCategory').value;
+      const authorInput = document.getElementById('modelAuthor').value;
+      const fileInput = document.getElementById('modelFile').files[0];
+
+      if (!fileInput) {
+        alert('Пожалуйста, выберите файл модели (.glb или .gltf)');
+        return;
+      }
+
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Загрузка...';
+      submitBtn.innerText = 'Загрузка на сервер...';
 
       const formData = new FormData();
-      formData.append('title', document.getElementById('modelTitle').value);
-      formData.append('category', document.getElementById('modelCategory').value);
-      formData.append('author', document.getElementById('modelAuthor').value);
-      formData.append('file', document.getElementById('modelFile').files[0]);
+      formData.append('title', titleInput);
+      formData.append('category', categoryInput);
+      formData.append('author', authorInput);
+      formData.append('file', fileInput);
 
       try {
         const res = await fetch('/api/assets', {
@@ -116,16 +127,18 @@
         if (res.ok) {
           document.getElementById('uploadForm').reset();
           loadAdminModels();
-          alert('Модель успешно загружена!');
+          alert('Модель успешно загружена в каталог!');
         } else if (res.status === 401) {
-          alert('Ошибка авторизации. Обновите страницу и введите правильный логин и пароль.');
+          alert('Ошибка авторизации. Перезагрузите страницу.');
           location.reload();
         } else {
-          alert('Ошибка при загрузке модели на сервер.');
+          const errText = await res.text();
+          console.error('Ошибка сервера:', errText);
+          alert('Ошибка при загрузке модели. Проверьте консоль (F12).');
         }
       } catch (err) {
         console.error('Ошибка сети:', err);
-        alert('Произошла ошибка соединения с сервером.');
+        alert('Не удалось связаться с сервером.');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Загрузить модель в каталог';
