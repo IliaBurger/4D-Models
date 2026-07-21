@@ -6,6 +6,10 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Настройка логина и пароля администратора
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "12345"; // Вы можете изменить пароль здесь
+
 // Создаем папку для загрузок в корне, если она еще не создана
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -33,25 +37,46 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(uploadDir));
 
+// Функция проверки авторизации (Basic Auth) для панели управления
+function checkAuth(req, res, next) {
+  const authheader = req.headers.authorization;
+  if (!authheader) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Admin Panel"');
+    return res.status(401).send('Требуется авторизация');
+  }
+
+  const auth = Buffer.from(authheader.split(' ')[1], 'base64').toString().split(':');
+  const user = auth[0];
+  const pass = auth[1];
+
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    next();
+  } else {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Admin Panel"');
+    res.status(401).send('Неверный логин или пароль');
+  }
+}
+
 // Явные маршруты для страниц
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/admin.html', (req, res) => {
+// Защищаем страницу админки паролем
+app.get('/admin.html', checkAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // Хранилище списка моделей в памяти
 let assets = [];
 
-// API: Получить список всех моделей
+// API: Получить список всех моделей (доступно всем)
 app.get('/api/assets', (req, res) => {
   res.json(assets);
 });
 
-// API: Загрузить новую модель (из admin.html)
-app.post('/api/assets', upload.single('file'), (req, res) => {
+// API: Загрузить новую модель (только для администратора)
+app.post('/api/assets', checkAuth, upload.single('file'), (req, res) => {
   try {
     const { title, category, author } = req.body;
     
@@ -77,8 +102,8 @@ app.post('/api/assets', upload.single('file'), (req, res) => {
   }
 });
 
-// API: Удалить модель по ID
-app.delete('/api/assets/:id', (req, res) => {
+// API: Удалить модель по ID (только для администратора)
+app.delete('/api/assets/:id', checkAuth, (req, res) => {
   const modelId = req.params.id;
   const modelIndex = assets.findIndex(a => a.id === modelId);
 
