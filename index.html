@@ -4,17 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- SEO: Заголовок и описание для поисковиков -->
-  <title id="pageTitle">4D Models — Бесплатные 3D-модели и сток ассетов</title>
-  <meta name="description" content="Скачивайте бесплатные 3D-модели в формате GLB/GLTF для дизайна, игр и веб-проектов. Большая коллекция открытых 3D-ресурсов с удобным просмотром.">
-
-  <!-- Ярлык (Фавикон) сайта -->
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/favicon.png">
-
   <!-- Метатег подтверждения Яндекс Вебмастера -->
   <meta name="yandex-verification" content="61d6a1d1fcc9d23d">
 
+  <title id="pageTitle">4D Models // 3D Stock Platform</title>
   <link rel="stylesheet" href="style.css">
   
   <!-- Подключение Three.js, GLTFLoader и OrbitControls -->
@@ -28,7 +21,7 @@
   <header>
     <div class="logo">4D Models</div>
     <nav style="display: flex; align-items: center; gap: 20px;">
-      <a href="admin.html" id="navAdmin" style="color: var(--text-secondary); text-decoration: none;">Панель управления</a>
+      <a href="admin.html" id="navAdmin">Панель управления</a>
       <select id="langSwitcher" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer;">
         <option value="ru">RU</option>
         <option value="en">EN</option>
@@ -69,26 +62,26 @@
     </div>
   </div>
 
-  <!-- Строгое модальное окно с прямой ссылкой на канал -->
+  <!-- Модальное окно проверки подписки на Telegram -->
   <div id="subModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.9); backdrop-filter: blur(10px); z-index: 1100; align-items: center; justify-content: center; padding: 20px;">
     <div style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 450px; padding: 30px; text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
       <span id="closeSubModal" style="position: absolute; top: 15px; right: 20px; font-size: 24px; color: #fff; cursor: pointer;">&times;</span>
       
       <div style="font-size: 40px; margin-bottom: 15px;">📢</div>
-      <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Доступ к скачиванию</h3>
-      <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">Чтобы получить 3D-модель бесплатно, вы должны быть подписаны на наш Telegram-канал.</p>
+      <h3 id="subModalTitle" style="color: #fff; font-size: 20px; margin-bottom: 10px;">Подпишитесь на Telegram-канал</h3>
+      <p id="subModalText" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Чтобы скачать модель бесплатно, подпишитесь на наш канал.</p>
       
-      <!-- Прямая ссылка на ваш Telegram-канал -->
-      <a id="tgDirectLink" href="https://t.me/Public4DRY" target="_blank" style="display: block; width: 100%; padding: 14px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Перейти и подписаться на канал</a>
+      <!-- Ссылка ведет на ваш Telegram-канал -->
+      <a id="tgLinkBtn" href="https://t.me/Public4D_models" target="_blank" style="display: block; width: 100%; padding: 12px; background: #0088cc; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">1. Подписаться на канал</a>
       
-      <button id="strictDownloadBtn" style="display: block; width: 100%; padding: 14px; background: #374151; color: #9ca3af; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px;" disabled>2. Сначала подпишитесь</button>
+      <button id="confirmDownloadBtn" style="display: block; width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">2. Я подписался — Скачать</button>
     </div>
   </div>
 
   <script>
     const translations = {
       ru: {
-        pageTitle: "4D Models — Бесплатные 3D-модели и сток ассетов",
+        pageTitle: "4D Models // 3D Stock Platform",
         navAdmin: "Панель управления",
         heroTitle: "Бесплатная коллекция 3D-моделей",
         heroSubtitle: "Загружайте открытые 3D-ресурсы для своих проектов",
@@ -97,14 +90,13 @@
         authorPrefix: "Автор: ",
         downloadBtn: "Скачать 3D-модель",
         noModels: "Модели не найдены",
-        subTitle: "Доступ к скачиванию",
-        subText: "Чтобы получить 3D-модель бесплатно, вы должны быть подписаны на наш Telegram-канал.",
-        tgBtn: "1. Перейти и подписаться на канал",
-        lockedBtn: "2. Сначала подпишитесь",
-        unlockedBtn: "Я подписался — Скачать модель"
+        subTitle: "Подпишитесь на Telegram-канал",
+        subText: "Чтобы скачать модель бесплатно, подпишитесь на наш канал.",
+        tgBtn: "1. Подписаться на канал",
+        confirmBtn: "2. Я подписался — Скачать"
       },
       en: {
-        pageTitle: "4D Models — Free 3D Models & Assets Stock",
+        pageTitle: "4D Models // 3D Stock Platform",
         navAdmin: "Admin Panel",
         heroTitle: "Free 3D Models Collection",
         heroSubtitle: "Download open 3D assets for your projects",
@@ -113,11 +105,10 @@
         authorPrefix: "Author: ",
         downloadBtn: "Download 3D Model",
         noModels: "No models found",
-        subTitle: "Download Access",
-        subText: "To download the 3D model for free, you must be subscribed to our Telegram channel.",
-        tgBtn: "1. Go and Subscribe to Channel",
-        lockedBtn: "2. Subscribe First",
-        unlockedBtn: "I subscribed — Download Model"
+        subTitle: "Subscribe to Telegram Channel",
+        subText: "To download the model for free, please subscribe to our channel.",
+        tgBtn: "1. Subscribe to Channel",
+        confirmBtn: "2. I subscribed — Download"
       }
     };
 
@@ -131,7 +122,6 @@
     let allModels = [];
     let selectedCategory = "All";
     let currentModelData = null;
-    let userClickedSub = false;
 
     const langSwitcher = document.getElementById('langSwitcher');
     langSwitcher.value = currentLang;
@@ -149,13 +139,8 @@
       document.getElementById('openSubModalBtn').innerText = t.downloadBtn;
       document.getElementById('subModalTitle').innerText = t.subTitle;
       document.getElementById('subModalText').innerText = t.subText;
-      document.getElementById('tgDirectLink').innerText = t.tgBtn;
-      
-      if (!userClickedSub) {
-        document.getElementById('strictDownloadBtn').innerText = t.lockedBtn;
-      } else {
-        document.getElementById('strictDownloadBtn').innerText = t.unlockedBtn;
-      }
+      document.getElementById('tgLinkBtn').innerText = t.tgBtn;
+      document.getElementById('confirmDownloadBtn').innerText = t.confirmBtn;
 
       renderCategories();
       renderModels();
@@ -209,11 +194,10 @@
       filtered.forEach(model => {
         const card = document.createElement('div');
         card.className = 'model-card';
-        card.style.cssText = 'background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s;';
-        
+        card.style.cursor = 'pointer';
         card.innerHTML = `
-          <div class="card-thumb-container" style="height: 180px; background: #05070c; position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color); overflow: hidden;">
-            <span class="thumb-loader" style="font-size: 20px; color: var(--text-secondary);">⏳</span>
+          <div style="height: 180px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 32px; opacity: 0.5;">📦</span>
           </div>
           <div style="padding: 16px;">
             <h3 style="color: #fff; font-size: 16px; margin-bottom: 4px;">${model.title}</h3>
@@ -223,56 +207,6 @@
 
         card.addEventListener('click', () => openModal(model));
         grid.appendChild(card);
-
-        // Генерация превью модели на карточке
-        generateThumbnail(model.file_path, card.querySelector('.card-thumb-container'));
-      });
-    }
-
-    function generateThumbnail(modelUrl, container) {
-      const width = container.clientWidth || 280;
-      const height = container.clientHeight || 180;
-
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x05070c);
-
-      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      camera.position.set(0, 1.5, 4);
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-      renderer.setSize(width, height);
-      renderer.outputEncoding = THREE.sRGBEncoding;
-
-      scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-      const light = new THREE.DirectionalLight(0xffffff, 2.5);
-      light.position.set(5, 8, 5);
-      scene.add(light);
-
-      const loader = new THREE.GLTFLoader();
-      loader.load(modelUrl, (gltf) => {
-        const obj = gltf.scene;
-        const box = new THREE.Box3().setFromObject(obj);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2.2 / maxDim;
-        obj.scale.set(scale, scale, scale);
-
-        obj.position.x = -center.x * scale;
-        obj.position.y = -center.y * scale;
-        obj.position.z = -center.z * scale;
-
-        scene.add(obj);
-
-        renderer.render(scene, camera);
-        const dataURL = renderer.domElement.toDataURL('image/png');
-
-        container.innerHTML = `<img src="${dataURL}" style="width: 100%; height: 100%; object-fit: cover;" alt="Model Preview">`;
-        renderer.dispose();
-      }, undefined, (err) => {
-        console.error('Ошибка генерации превью:', err);
-        container.innerHTML = `<span style="font-size: 28px;">📦</span>`;
       });
     }
 
@@ -355,8 +289,7 @@
     const subModal = document.getElementById('subModal');
     const closeSubModal = document.getElementById('closeSubModal');
     const openSubModalBtn = document.getElementById('openSubModalBtn');
-    const tgDirectLink = document.getElementById('tgDirectLink');
-    const strictDownloadBtn = document.getElementById('strictDownloadBtn');
+    const confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
 
     function openModal(model) {
       currentModelData = model;
@@ -384,17 +317,8 @@
       subModal.style.display = 'none';
     });
 
-    tgDirectLink.addEventListener('click', () => {
-      userClickedSub = true;
-      strictDownloadBtn.style.background = '#10b981';
-      strictDownloadBtn.style.color = '#fff';
-      strictDownloadBtn.style.cursor = 'pointer';
-      strictDownloadBtn.removeAttribute('disabled');
-      strictDownloadBtn.innerText = translations[currentLang].unlockedBtn;
-    });
-
-    strictDownloadBtn.addEventListener('click', () => {
-      if (!userClickedSub || !currentModelData) return;
+    confirmDownloadBtn.addEventListener('click', () => {
+      if (!currentModelData) return;
 
       const a = document.createElement('a');
       a.href = currentModelData.file_path;
@@ -406,13 +330,6 @@
       subModal.style.display = 'none';
       modal.style.display = 'none';
       if (renderer) renderer.dispose();
-      
-      userClickedSub = false;
-      strictDownloadBtn.style.background = '#374151';
-      strictDownloadBtn.style.color = '#9ca3af';
-      strictDownloadBtn.style.cursor = 'not-allowed';
-      strictDownloadBtn.setAttribute('disabled', 'true');
-      strictDownloadBtn.innerText = translations[currentLang].lockedBtn;
     });
 
     window.addEventListener('click', (e) => {
