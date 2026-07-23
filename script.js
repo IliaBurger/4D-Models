@@ -1,3 +1,12 @@
+// Настройки Telegram-канала
+const TG_CHANNEL_URL = "https://t.me/Public4DRY";
+const TG_CHANNEL_USERNAME = "@Public4DRY";
+
+// Функция перенаправления на Telegram-канал
+function redirectToTelegram() {
+    window.open(TG_CHANNEL_URL, "_blank");
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const modelsGrid = document.getElementById('modelsGrid');
   const searchInput = document.getElementById('searchInput');
@@ -19,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Отрисовка карточек
   function renderAssets(items) {
+    if (!modelsGrid) return;
     modelsGrid.innerHTML = '';
     
     if (items.length === 0) {
@@ -41,11 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Поиск по названию
-  searchInput.addEventListener('input', (e) => {
-    const val = e.target.value.toLowerCase();
-    const filtered = allAssets.filter(item => item.title.toLowerCase().includes(val));
-    renderAssets(filtered);
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const val = e.target.value.toLowerCase();
+      const filtered = allAssets.filter(item => item.title.toLowerCase().includes(val));
+      renderAssets(filtered);
+    });
+  }
 
   // Фильтрация по категориям
   categoryButtons.forEach(btn => {
