@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-
+app.use('/uploads', express.static('uploads'));
 // Константы для Telegram-канала
 const TG_CHANNEL_URL = "https://t.me/Public4DRY";
 const TG_CHANNEL_USERNAME = "@Public4DRY";
